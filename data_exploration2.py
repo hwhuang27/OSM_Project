@@ -24,19 +24,35 @@ def distance(points):
 def main():
     input_file = sys.argv[1]
     data = pd.read_json(input_file, lines = True)
-    #print(data.dtypes)
+    
     
     # take a look at all the amenities
-    data2 = data[['amenity', 'tags']]
-    print(data2)
+    data2 = data[['name', 'amenity', 'tags']]
+
+    # generate amenity graph for complete data set
+    #pd.value_counts(data['amenity']).plot.barh(figsize=(10,45), title='Amenity Counts')
+
+    # Food amenities: 
+    food = data2[data2['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data2['amenity'].str.contains("disused")]
+    food = food.dropna()
+    print(food)
+    
+    # Large chain restaurants: 
+    brand = food[food.apply(lambda x: 'brand' in x['tags'], axis = 1)]
+    print(brand)
+    pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
+
+    # Non-chain restaurants:
+    nobrand = food[food.apply(lambda x: 'brand' not in x['tags'], axis = 1)]
+    print(nobrand)
+    #pd.value_counts(nobrand['name']).plot.barh(figsize=(15,30), title='Counts for Non-Chain Restaurants')
+    
+
+    # other code to help visualize data
+    print(data.dtypes)
+    
     #unique = data['amenity'].unique()
     #print(unique.size)
-    pd.value_counts(data['amenity']).plot.barh(figsize=(10,45), title='Amenity Counts')
-    # 
-
-    # (Mostly) Useless Amenities: 
-    # [bench, waste_basket, drinking_water, bicycle_parking, post_box, ]
-    
 
 if __name__ == '__main__':
     main()
