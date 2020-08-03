@@ -40,12 +40,19 @@ def output_gpx(points, output_filename):
         doc.writexml(fh, indent = ' ')
 
 
+# python3 data_exploration.py ./osm/amenities-vancouver.json.gz output.gpx
 def main():
     input_file = sys.argv[1]
     output_file = sys.argv[2]
     data = pd.read_json(input_file, lines = True)
-    print(data.columns)
+
     print(data)
+    print(data.lat.mean(), data.lon.mean())
+
+    # from pprint import pprint
+    # for i in range(100):
+    #     pprint(data['tags'].iloc[i], indent = 4)
+
     output_gpx(data[['lat', 'lon']], output_file)
 
 
