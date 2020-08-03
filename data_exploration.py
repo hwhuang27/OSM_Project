@@ -20,11 +20,41 @@ def distance(points):
     return np.sum(R * 2 * np.arctan2(np.sqrt(data['a']), np.sqrt(1 - data['a'])))
 
 
+def output_gpx(points, output_filename):
+    """
+    Output a GPX file with latitude and longitude from the points DataFrame.
+    """
+    from xml.dom.minidom import getDOMImplementation
+    def append_trkpt(pt, trkseg, doc):
+        trkpt = doc.createElement('trkpt')
+        trkpt.setAttribute('lat', '%.8f' % (pt['lat']))
+        trkpt.setAttribute('lon', '%.8f' % (pt['lon']))
+        trkseg.appendChild(trkpt)
+    doc = getDOMImplementation().createDocument(None, 'gpx', None)
+    trk = doc.createElement('trk')
+    doc.documentElement.appendChild(trk)
+    trkseg = doc.createElement('trkseg')
+    trk.appendChild(trkseg)
+    points.apply(append_trkpt, axis = 1, trkseg = trkseg, doc = doc)
+    with open(output_filename, 'w') as fh:
+        doc.writexml(fh, indent = ' ')
 
+
+# python3 data_exploration.py ./osm/amenities-vancouver.json.gz output.gpx
 def main():
     input_file = sys.argv[1]
+    output_file = sys.argv[2]
     data = pd.read_json(input_file, lines = True)
+
     print(data)
+    print(data.lat.mean(), data.lon.mean())
+
+    # from pprint import pprint
+    # for i in range(100):
+    #     pprint(data['tags'].iloc[i], indent = 4)
+
+    output_gpx(data[['lat', 'lon']], output_file)
+
 
 
 if __name__ == '__main__':
