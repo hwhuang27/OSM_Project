@@ -46,14 +46,21 @@ def main():
     output_file = sys.argv[2]
     data = pd.read_json(input_file, lines = True)
 
-    print(data)
-    print(data.lat.mean(), data.lon.mean())
+    data = data.sort_values(by = 'timestamp').reset_index(drop = True)
+
+    # print(data)
+    output_gpx(data[['lat', 'lon']], output_file)
+
+    # print(data)
+    # print(data.lat.mean(), data.lon.mean())
 
     # from pprint import pprint
-    # for i in range(100):
+    # for i in range(20):
     #     pprint(data['tags'].iloc[i], indent = 4)
 
-    output_gpx(data[['lat', 'lon']], output_file)
+    # print(data[data.apply(lambda x: 'brand' not in x['tags'], axis = 1)])
+
+
 
 
 
