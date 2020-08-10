@@ -5,8 +5,10 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn
 from pykalman import KalmanFilter
 
+seaborn.set()
 
 # Reference: https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula/21623206
 def distance(points):
@@ -25,9 +27,8 @@ def main():
     input_file = sys.argv[1]
     data = pd.read_json(input_file, lines = True)
     
-    
-    # take a look at all the amenities
     data2 = data[['name', 'amenity', 'tags']]
+    #print(data2)
 
     # generate amenity graph for complete data set
     #pd.value_counts(data['amenity']).plot.barh(figsize=(10,45), title='Amenity Counts')
@@ -35,24 +36,14 @@ def main():
     # Food amenities: 
     food = data2[data2['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data2['amenity'].str.contains("disused")]
     food = food.dropna()
-    print(food)
     
-    # Large chain restaurants: 
+    # Large chain restaurants
     brand = food[food.apply(lambda x: 'brand' in x['tags'], axis = 1)]
-    print(brand)
     pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
 
     # Non-chain restaurants:
     nobrand = food[food.apply(lambda x: 'brand' not in x['tags'], axis = 1)]
-    print(nobrand)
-    #pd.value_counts(nobrand['name']).plot.barh(figsize=(15,30), title='Counts for Non-Chain Restaurants')
     
-
-    # other code to help visualize data
-    print(data.dtypes)
-    
-    #unique = data['amenity'].unique()
-    #print(unique.size)
 
 if __name__ == '__main__':
     main()
