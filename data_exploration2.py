@@ -23,26 +23,32 @@ def distance(points):
     data['a'] = np.sin(data['dLat'] / 2) ** 2 + data['prodLat'] * np.sin(data['dLon'] / 2) ** 2
     return np.sum(R * 2 * np.arctan2(np.sqrt(data['a']), np.sqrt(1 - data['a'])))
 
+
+
 def main():
     input_file = sys.argv[1]
     data = pd.read_json(input_file, lines = True)
-    
     data2 = data[['name', 'amenity', 'tags']]
-    #print(data2)
 
-    # generate amenity graph for complete data set
+    # Amenity graph
     #pd.value_counts(data['amenity']).plot.barh(figsize=(10,45), title='Amenity Counts')
 
-    # Food amenities: 
+    # Filter only food amenities: 
     food = data2[data2['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data2['amenity'].str.contains("disused")]
     food = food.dropna()
+    #print(food)
     
-    # Large chain restaurants
+    # Filter large chain restaurants
     brand = food[food.apply(lambda x: 'brand' in x['tags'], axis = 1)]
-    pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
+    #pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
+    
+    # Question: Are there areas in the city with more pizza restaurants?
+    # Filter pizza restaurants
+    def filter_pizza(tags):
+        return 'pizza' in tags.values()
+    
+    pizza = food[food['tags'].apply(filter_pizza)]
 
-    # Non-chain restaurants:
-    nobrand = food[food.apply(lambda x: 'brand' not in x['tags'], axis = 1)]
     
 
 if __name__ == '__main__':
