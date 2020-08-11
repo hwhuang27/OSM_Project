@@ -1,13 +1,12 @@
-# OSM Project
-# data_exploration.py
+# CMPT354 Data Science Project (OSM)
+# David Huang
 
 import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn
-seaborn.set()
-
+import seaborn as sns
+sns.set()
 
 def main():
     input_file = sys.argv[1]
@@ -20,6 +19,12 @@ def main():
     # Amenity graph
     #pd.value_counts(data['amenity']).plot.barh(figsize=(10,45), title='Amenity Counts')
 
+    # ----- Remove boring stuff from data set -----
+    # output: amenities-vancouver-reduced.json
+    
+    
+
+
     # ----- Wikidata section -----
     # Filter entries with a wikidata tag
     wiki = data[data.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
@@ -30,7 +35,7 @@ def main():
     food = data[data['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data['amenity'].str.contains("disused")]
     food = food.dropna()
     
-    # Question: What are the most popular types of restaurants in this city?
+    # Question: What are the top restaurant types in this city? 
     # Follow-up: ...
     # This is to be a rough estimate of some of the most popular types of restaurants in Vancouver.
     # It is a rough estimate because some tags overlap (e.g japanese and sushi)
@@ -67,11 +72,19 @@ def main():
     cuisine = cuisine.groupby(['type']).size().to_frame('count').reset_index()
     cuisine = cuisine.sort_values(by=['count'], ascending=False)
     
-    # todo: plot the data
+    # filter low count entries / filter cultural tags -> plot the data
+    cuisine = cuisine[cuisine['count'] > 20]
+    #cuisine = cuisine[~cuisine['type'].str.contains("chinese|japanese|vietnamese|indian|mexican|italian|thai|asian|greek|korean|american|regional|portuguese|french|malaysian|mediterranean")]
 
-    cuisine.to_csv(output_file)
+    plt.figure(figsize=(14,10))
+    plt.barh(np.arange(len(cuisine)), cuisine['count'], height=0.7, alpha=0.8, color='bg')
+    plt.yticks(np.arange(len(cuisine)), cuisine['type'])
+    plt.xlabel('Count')
+    plt.title('Top Restaurant types in Vancouver')
+    plt.show()
     
-   
+    #cuisine.to_csv(output_file)
+    
     # Question: Are there areas in the city with more pizza restaurants?
     # Filter pizza restaurants
     def filter_pizza(tags):
@@ -84,7 +97,6 @@ def main():
     # Filter chain restaurants
     brand = food[food.apply(lambda x: 'brand' in x['tags'], axis = 1)]
     #pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
-
 
 
 if __name__ == '__main__':
