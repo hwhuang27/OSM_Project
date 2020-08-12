@@ -8,6 +8,21 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+
+def get_clusters(X):
+    # get_clusters() from Exercise 8 
+    model = make_pipeline(
+        # I chose n=5 here from looking at the Folium map on Jupyter Notebook
+        # because there were roughly 5 areas that pizza places clustered around
+        KMeans(n_clusters=5)
+    )
+    model.fit(X)
+    return model.predict(X)
+
 def main():
     input_file = sys.argv[1]
     output_file = sys.argv[2]   # viewing dataframes for testing purposes
@@ -43,12 +58,12 @@ def main():
     reduced = reduced[~reduced['amenity'].str.contains(throwaways)]
     
     # original amenity graph
-    pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
+    #pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
     #ac = pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
     #ac.figure.savefig('amenity_counts.png')
     
     # reduced amenity graph
-    pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
+    #pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
     #acr = pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
     #acr.figure.savefig('amenity_reduced.png')
 
@@ -56,7 +71,6 @@ def main():
     # ----- Wikidata section -----
     # Filter entries with a wikidata tag
     wiki = reduced[reduced.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
-    print(wiki)
 
     # ----- Food section -----
     # Filter only food amenities: 
@@ -103,13 +117,16 @@ def main():
     # filter low count entries / filter cultural tags -> plot the data
     cuisine = cuisine[cuisine['count'] > 20]
     
+    # plot [Top Restaurant Types] 
     plt.figure(figsize=(14,10))
     plt.barh(np.arange(len(cuisine)), cuisine['count'], height=0.7, alpha=0.8, color='bg')
     plt.yticks(np.arange(len(cuisine)), cuisine['type'])
     plt.xlabel('Count')
     plt.title('Top Restaurant types in Vancouver')
     plt.savefig('top_restaurant_types.png')
+    plt.clf()
     
+    # plot [Top Restaurant Types] excluding cultural tags
     cuisine = cuisine[~cuisine['type'].str.contains("chinese|japanese|vietnamese|indian|mexican|italian|thai|asian|greek|korean|american|regional|portuguese|french|malaysian|mediterranean")]
     plt.figure(figsize=(14,10))
     plt.barh(np.arange(len(cuisine)), cuisine['count'], height=0.7, alpha=0.8, color='bg')
@@ -117,6 +134,7 @@ def main():
     plt.xlabel('Count')
     plt.title('Top Restaurant types in Vancouver (excluding cultural tags)')
     plt.savefig('top_restaurant_types_no_cultural_tags.png')
+    plt.clf()
     
     #cuisine.to_csv(output_file)
     
@@ -128,8 +146,15 @@ def main():
     pizza = food[food['tags'].apply(filter_pizza)]
     pizza = pizza[['lat', 'lon', 'name']]
     
-    # plot a scatter plot and color clusters to show neighboring pizza restaurants
     
+    X = pizza.drop(columns=['name'])
+    y = pizza.drop(columns=['name'])
+
+    pizza_clusters = get_clusters(X)
+    
+    plt.scatter(X['lat'], X['lon'], c=pizza_clusters, cmap='Set3', edgecolor='k', alpha=0.9, s=170)
+    plt.show()
+    plt.savefig('pizza_clusters.png')   
     
     
     # Question: TBD (something about chain restaurants)
