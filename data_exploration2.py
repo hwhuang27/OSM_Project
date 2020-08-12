@@ -122,7 +122,7 @@ def main():
     plt.yticks(np.arange(len(cuisine)), cuisine['type'])
     plt.xlabel('Count')
     plt.title('Top Restaurant types in Vancouver')
-    plt.savefig('top_restaurant_types.png')
+    plt.savefig('top_restaurants_analysis/top_restaurant_types.png')
     plt.clf()
     
     # plot [Top Restaurant Types] excluding cultural tags
@@ -132,7 +132,7 @@ def main():
     plt.yticks(np.arange(len(cuisine)), cuisine['type'])
     plt.xlabel('Count')
     plt.title('Top Restaurant types in Vancouver (excluding cultural tags)')
-    plt.savefig('top_restaurant_types_no_cultural_tags.png')
+    plt.savefig('top_restaurants_analysis/top_restaurant_types_no_cultural_tags.png')
     plt.clf()
     
     #cuisine.to_csv(output_file)
@@ -168,7 +168,7 @@ def main():
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.4),
             arrowprops=dict(arrowstyle = 'simple', connectionstyle='arc3,rad=0')) 
     
-    plt.savefig('pizza_clusters.png')   
+    plt.savefig('pizza_clusters_analysis/pizza_clusters.png')   
     
     # Question: TBD (something about chain restaurants)
     # Filter chain restaurants
