@@ -43,23 +43,40 @@ def output_gpx(points, output_filename):
 # python3 data_exploration.py ./osm/amenities-vancouver.json.gz output.gpx
 def main():
     input_file = sys.argv[1]
-    output_file = sys.argv[2]
     data = pd.read_json(input_file, lines = True)
+    print(data)
 
-    data = data.sort_values(by = 'timestamp').reset_index(drop = True)
 
+    """ GPX file """
+    # output_file = sys.argv[2]
+    # data = data.sort_values(by = 'timestamp').reset_index(drop = True)
     # print(data)
-    output_gpx(data[['lat', 'lon']], output_file)
+    # output_gpx(data[['lat', 'lon']], output_file)
 
-    # print(data)
+
+    """ center of the map """
     # print(data.lat.mean(), data.lon.mean())
 
+
+    """ tags """
     # from pprint import pprint
     # for i in range(20):
     #     pprint(data['tags'].iloc[i], indent = 4)
 
     # print(data[data.apply(lambda x: 'brand' not in x['tags'], axis = 1)])
 
+
+    """ wiki data """
+    # wiki = data[data.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
+    # print(wiki)
+
+    # from pprint import pprint
+    # for i in range(20):
+    #     pprint(wiki['tags'].iloc[i], indent = 4)
+
+    data = data.dropna()
+    data = data[data['amenity'] == 'fast_food']
+    print(data)
 
 
 
