@@ -107,7 +107,10 @@ def main():
         'opening_hours', 
         'opening_hours_per_week'
     ]]
+    food = food.reset_index(drop = True)
     print(food)
+
+    food.to_json("opening_hours.json", orient = 'records', lines = True)
 
 
 
