@@ -9,16 +9,15 @@ import seaborn as sns
 sns.set()
 
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 
 def get_clusters(X):
     # get_clusters() from Exercise 8 
     model = make_pipeline(
-        # I chose n=5 here from looking at the Folium map on Jupyter Notebook
-        # because there were roughly 5 areas that pizza places clustered around
-        KMeans(n_clusters=5)
+        KMeans(n_clusters=7)
+        
+        # Cities to look at:
+        # ['Vancouver', 'Burnaby', 'Richmond', 'Coquitlam', 'Langley', 'Surrey', 'Abbotsford']   
     )
     model.fit(X)
     return model.predict(X)
@@ -138,24 +137,35 @@ def main():
     
     #cuisine.to_csv(output_file)
     
-    # Question: Are there areas in the city with more pizza restaurants?
+    # Question: How do the densities of pizza restaurants look like in each city?
     # Filter pizza restaurants
     def filter_pizza(tags):
         return 'pizza' in tags.values()
     
     pizza = food[food['tags'].apply(filter_pizza)]
-    pizza = pizza[['lat', 'lon', 'name']]
+    pizza = pizza[['lat', 'lon']]
+    pnp_lat = pizza['lat'].to_numpy()
+    pnp_lon = pizza['lon'].to_numpy()
+    
+    # center-of-city coordinates, courtesy of google
+    city_labels = ['Vancouver', 'Burnaby', 'Richmond', 'Coquitlam', 'Langley', 'Surrey', 'Abbotsford']
+    cities_lat = [49.2827, 49.2488, 49.1666, 49.2838, 49.1042, 49.1913, 49.0504]
+    cities_lon = [-123.1207, -122.9805, -123.1336, -122.7932, -122.6604, -122.8490, -122.3045]
+    
+    # include these points in our pizza data set
+    pnp_lat = np.append(pnp_lat, cities_lat)
+    pnp_lon = np.append(pnp_lon, cities_lon)
+    pizza = pd.DataFrame({'lat': pnp_lat, 'lon': pnp_lon})
+    
+    # set custom labels for center-of-city points
     
     
-    X = pizza.drop(columns=['name'])
-    y = pizza.drop(columns=['name'])
-
-    pizza_clusters = get_clusters(X)
+    # let's make some clusters!
+    pizza_clusters = get_clusters(pizza)  
     
-    plt.scatter(X['lat'], X['lon'], c=pizza_clusters, cmap='Set3', edgecolor='k', alpha=0.9, s=170)
-    plt.show()
+    # let's plot these clusters!
+    plt.scatter(pizza['lat'], pizza['lon'], c=pizza_clusters, cmap='Set2', edgecolor='k', alpha=0.9, s=180)
     plt.savefig('pizza_clusters.png')   
-    
     
     # Question: TBD (something about chain restaurants)
     # Filter chain restaurants
