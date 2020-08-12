@@ -71,6 +71,9 @@ def opening_hour_parser(s):
                 opening_hour[day_of_week[idx % len(day_of_week)]] = getHours(segs[1])
             else:
                 opening_hour[day_of_week[idx % len(day_of_week)]] = getHours("")
+    for key in opening_hour:
+        if opening_hour[key] == None:
+            opening_hour[key] = 0.0
     return opening_hour
 
 # python3 get_opening_hours.py ./osm/amenities-vancouver.json.gz
@@ -96,7 +99,7 @@ def main():
     )
 
     food['opening_hours_per_week'] = food.apply(
-        lambda x: sum([(x['opening_hours'][day] if x['opening_hours'][day] != None else 0.0) for day in day_of_week]), 
+        lambda x: sum([x['opening_hours'][day] for day in day_of_week]), 
         axis = 1
     )
     food = food[[
@@ -107,7 +110,10 @@ def main():
         'opening_hours', 
         'opening_hours_per_week'
     ]]
+    food = food.reset_index(drop = True)
     print(food)
+
+    food.to_json("opening_hours.json", orient = 'records', lines = True)
 
 
 
