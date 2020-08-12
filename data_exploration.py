@@ -4,6 +4,7 @@
 import sys
 import numpy as np
 import pandas as pd
+from pprint import pprint
 
 
 # Reference: https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula/21623206
@@ -43,22 +44,49 @@ def output_gpx(points, output_filename):
 # python3 data_exploration.py ./osm/amenities-vancouver.json.gz output.gpx
 def main():
     input_file = sys.argv[1]
-    output_file = sys.argv[2]
     data = pd.read_json(input_file, lines = True)
+    print(data)
 
-    data = data.sort_values(by = 'timestamp').reset_index(drop = True)
 
+    """ GPX file """
+    # output_file = sys.argv[2]
+    # data = data.sort_values(by = 'timestamp').reset_index(drop = True)
     # print(data)
-    output_gpx(data[['lat', 'lon']], output_file)
+    # output_gpx(data[['lat', 'lon']], output_file)
 
-    # print(data)
+
+    """ center of the map """
     # print(data.lat.mean(), data.lon.mean())
 
-    # from pprint import pprint
+
+    """ tags """
     # for i in range(20):
     #     pprint(data['tags'].iloc[i], indent = 4)
 
     # print(data[data.apply(lambda x: 'brand' not in x['tags'], axis = 1)])
+
+
+    """ wiki data """
+    # wiki = data[data.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
+    # print(wiki)
+    # for i in range(20):
+    #     pprint(wiki['tags'].iloc[i], indent = 4)
+
+
+    """ fast food """
+    # fast_food = data[data['amenity'] == 'fast_food']
+    # print(fast_food)
+
+
+    """ opening hours """
+    food = data[data['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data['amenity'].str.contains("disused")]
+    food = food.dropna()
+    food = food[food.apply(lambda x: 'opening_hours' in x['tags'], axis = 1)]
+
+    print(food)
+    print(food[food['amenity'] == 'fast_food'])
+    for i in range(40):
+        print(food['tags'].iloc[i]['opening_hours'])
 
 
 
