@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 def get_clusters(X):
     # get_clusters() from Exercise 8 
     model = make_pipeline(
-        KMeans(n_clusters=7)
+        KMeans(n_clusters=7, algorithm='elkan')
         
         # Cities to look at:
         # ['Vancouver', 'Burnaby', 'Richmond', 'Coquitlam', 'Langley', 'Surrey', 'Abbotsford']   
@@ -149,22 +149,25 @@ def main():
     
     # center-of-city coordinates, courtesy of google
     city_labels = ['Vancouver', 'Burnaby', 'Richmond', 'Coquitlam', 'Langley', 'Surrey', 'Abbotsford']
-    cities_lat = [49.2827, 49.2488, 49.1666, 49.2838, 49.1042, 49.1913, 49.0504]
-    cities_lon = [-123.1207, -122.9805, -123.1336, -122.7932, -122.6604, -122.8490, -122.3045]
+    cities_lat = np.array([49.2827, 49.2488, 49.1666, 49.2838, 49.1042, 49.1913, 49.0504])
+    cities_lon = np.array([-123.1207, -122.9805, -123.1336, -122.7932, -122.6604, -122.8490, -122.3045])
     
-    # include these points in our pizza data set
-    pnp_lat = np.append(pnp_lat, cities_lat)
-    pnp_lon = np.append(pnp_lon, cities_lon)
-    pizza = pd.DataFrame({'lat': pnp_lat, 'lon': pnp_lon})
+    # let's make those clusters
+    pizza_clusters = get_clusters(pizza)
     
     # set custom labels for center-of-city points
+    # reference: https://stackoverflow.com/questions/5147112/how-to-put-individual-tags-for-a-scatter-plot
+    plt.subplots_adjust(bottom = 0.1)
+    plt.title('Pizza Restaurant Densities')
+    plt.scatter(pizza['lat'], pizza['lon'], marker='o', c=pizza_clusters, cmap='Set2', alpha=0.9, s=110)
+    for label, x, y in zip(city_labels, cities_lat, cities_lon):
+        plt.annotate(
+            label,
+            xy=(x, y), xytext=(-20,20),
+            textcoords='offset points', ha='right', va='bottom',
+            bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.4),
+            arrowprops=dict(arrowstyle = 'simple', connectionstyle='arc3,rad=0')) 
     
-    
-    # let's make some clusters!
-    pizza_clusters = get_clusters(pizza)  
-    
-    # let's plot these clusters!
-    plt.scatter(pizza['lat'], pizza['lon'], c=pizza_clusters, cmap='Set2', edgecolor='k', alpha=0.9, s=180)
     plt.savefig('pizza_clusters.png')   
     
     # Question: TBD (something about chain restaurants)
