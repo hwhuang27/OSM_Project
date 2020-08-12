@@ -71,6 +71,9 @@ def opening_hour_parser(s):
                 opening_hour[day_of_week[idx % len(day_of_week)]] = getHours(segs[1])
             else:
                 opening_hour[day_of_week[idx % len(day_of_week)]] = getHours("")
+    for key in opening_hour:
+        if opening_hour[key] == None:
+            opening_hour[key] = 0.0
     return opening_hour
 
 # python3 get_opening_hours.py ./osm/amenities-vancouver.json.gz
