@@ -99,7 +99,7 @@ def main():
     )
 
     food['opening_hours_per_week'] = food.apply(
-        lambda x: sum([(x['opening_hours'][day] if x['opening_hours'][day] != None else 0.0) for day in day_of_week]), 
+        lambda x: sum([x['opening_hours'][day] for day in day_of_week]), 
         axis = 1
     )
     food = food[[
