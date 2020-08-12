@@ -4,6 +4,7 @@
 import sys
 import numpy as np
 import pandas as pd
+from pprint import pprint
 
 
 # Reference: https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula/21623206
@@ -59,7 +60,6 @@ def main():
 
 
     """ tags """
-    # from pprint import pprint
     # for i in range(20):
     #     pprint(data['tags'].iloc[i], indent = 4)
 
@@ -69,14 +69,25 @@ def main():
     """ wiki data """
     # wiki = data[data.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
     # print(wiki)
-
-    # from pprint import pprint
     # for i in range(20):
     #     pprint(wiki['tags'].iloc[i], indent = 4)
 
-    data = data.dropna()
-    data = data[data['amenity'] == 'fast_food']
-    print(data)
+
+    """ fast food """
+    # fast_food = data[data['amenity'] == 'fast_food']
+    # print(fast_food)
+
+
+    """ opening hours """
+    food = data[data['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data['amenity'].str.contains("disused")]
+    food = food.dropna()
+    food = food[food.apply(lambda x: 'opening_hours' in x['tags'], axis = 1)]
+
+    print(food)
+    print(food[food['amenity'] == 'fast_food'])
+    for i in range(40):
+        print(food['tags'].iloc[i]['opening_hours'])
+
 
 
 
