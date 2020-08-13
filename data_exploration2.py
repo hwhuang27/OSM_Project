@@ -1,5 +1,6 @@
 # CMPT354 Data Science Project (OSM)
 # David Huang
+# data_exploration2.py
 
 import sys
 import numpy as np
@@ -17,7 +18,7 @@ def get_clusters(X):
     model = make_pipeline(
         KMeans(n_clusters=7, algorithm='elkan')
         
-        # Cities to look at:
+        # 7 Cities to look at:
         # ['Vancouver', 'Burnaby', 'Richmond', 'Coquitlam', 'Langley', 'Surrey', 'Abbotsford']   
     )
     model.fit(X)
@@ -30,7 +31,7 @@ def main():
     data = pd.read_json(input_file, lines = True)
     #data = data[['lat', 'lon', 'name', 'amenity', 'tags']]
 
-    # ----- Reduce and visualize amenities  -----
+    # ----- Reduce and visualize amenities -----
     
     # We followed a couple rough guidelines for keeping amenities ...
     # 1) Should be of use for both locals and tourists alike
@@ -72,7 +73,8 @@ def main():
     # ----- Wikidata section -----
     # Filter entries with a wikidata tag
     wiki = reduced[reduced.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
-
+    # didn't have time to expand upon this section unfortunately
+    
     # ----- Questions -----
     # Filter only food amenities: 
     food = reduced[reduced['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro")]
@@ -190,19 +192,18 @@ def main():
     plt.savefig('pizza_clusters_analysis/pizza_clusters.png')   
     plt.clf()
     
-    # Question 3) Something something gas stations
+    # Question 3) TBD (something about gas stations)
     # Filter gas stations
     fuel = reduced[reduced.apply(lambda x: 'brand' in x['tags'], axis = 1)]
     
     #fuel = fuel[fuel['amenity'] == 'fuel']
     #fuel[fuel['name'] == ""] = fuel['tags']
-    
     #fuel.to_csv(output_file)
     
     # Question: TBD (something about chain restaurants)
     # Filter chain restaurants
     brand = food[food.apply(lambda x: 'brand' in x['tags'], axis = 1)]
     #pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
-
+    
 if __name__ == '__main__':
     main()
