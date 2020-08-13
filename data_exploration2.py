@@ -13,24 +13,15 @@ from sklearn.cluster import KMeans
 sns.set()
 plt.rcParams['font.size'] = 14.0
 
-def get_clusters(X):
-    # get_clusters() from Exercise 8 
-    model = make_pipeline(
-        KMeans(n_clusters=7, algorithm='elkan')
-        
-        # 7 Cities to look at:
-        # ['Vancouver', 'Burnaby', 'Richmond', 'Coquitlam', 'Langley', 'Surrey', 'Abbotsford']   
-    )
-    model.fit(X)
-    return model.predict(X)
 
 def main():
     input_file = sys.argv[1]
-    output_file = sys.argv[2]   # viewing dataframes for testing purposes
+    input_file_2 = sys.argv[2]
+    output_file = sys.argv[3]   # viewing dataframes for testing purposes
     
     data = pd.read_json(input_file, lines = True)
     #data = data[['lat', 'lon', 'name', 'amenity', 'tags']]
-
+    
     # ----- Reduce and visualize amenities -----
     
     # We followed a couple rough guidelines for keeping amenities ...
@@ -57,25 +48,28 @@ def main():
                   "nursery|water_point|car_rep|disused:restaurant|public_building|ATLAS_clean_room")
     
     reduced = reduced[~reduced['amenity'].str.contains(throwaways)]
+    reduced.to_csv(output_file)
     
     # original amenity graph
     pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
     ac = pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
+    plt.tight_layout()
     ac.figure.savefig('amenity_counts/amenity_counts.png')
     plt.clf()
     
     # reduced amenity graph
     pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
     acr = pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
+    plt.tight_layout()
     acr.figure.savefig('amenity_counts/amenity_reduced.png')
     plt.clf()
 
-    # ----- Wikidata section -----
+    # ----- Wikidata -----
     # Filter entries with a wikidata tag
     wiki = reduced[reduced.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
-    # didn't have time to expand upon this section unfortunately
+
     
-    # ----- Questions -----
+    # ----- Food questions -----
     # Filter only food amenities: 
     food = reduced[reduced['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro")]
     food = food.dropna()
@@ -125,6 +119,7 @@ def main():
     plt.yticks(np.arange(len(cuisine)), cuisine['type'])
     plt.xlabel('Count')
     plt.title('Top Restaurant types in Vancouver')
+    plt.tight_layout()
     plt.savefig('top_restaurants_analysis/top_restaurant_types.png')
     plt.clf()
     
@@ -135,6 +130,7 @@ def main():
     plt.yticks(np.arange(len(cuisine)), cuisine['type'])
     plt.xlabel('Count')
     plt.title('Top Restaurant types in Vancouver (excluding cultural tags)')
+    plt.tight_layout()
     plt.savefig('top_restaurants_analysis/top_restaurant_types_no_cultural_tags.png')
     plt.clf()
     
@@ -155,6 +151,7 @@ def main():
     explode = (0.01, 0.01, 0.01)
     plt.title('Percentage of Coffee Shops in and around Vancouver')
     plt.pie(coffee_counts, labels=coffee_counts.index, autopct='%1.1f%%', startangle=180)
+    plt.tight_layout()
     plt.savefig('top_restaurants_analysis/coffee_shop_follow_up.png')
     plt.clf()
     
@@ -174,6 +171,15 @@ def main():
     cities_lon = np.array([-123.1207, -122.9805, -123.1336, -122.7932, -122.6604, -122.8490, -122.3045])
     
     # let's make some clusters
+    def get_clusters(X):
+        # get_clusters() from Exercise 8 
+        model = make_pipeline(
+            # 7 cities to cluster around
+            KMeans(n_clusters=7, algorithm='elkan')
+        )
+        model.fit(X)
+        return model.predict(X)    
+    
     pizza_clusters = get_clusters(pizza)
     
     # set custom labels for center-of-city points
@@ -189,16 +195,49 @@ def main():
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.4),
             arrowprops=dict(arrowstyle = 'simple', connectionstyle='arc3,rad=0')) 
     
+    plt.tight_layout()
     plt.savefig('pizza_clusters_analysis/pizza_clusters.png')   
     plt.clf()
+
+    # ----- Park questions -----
+    # Combine park data into OSM data
+    # https://opendata.vancouver.ca/explore/dataset/parks/table/
     
-    # Question 3) TBD (something about gas stations)
+    
+    
+    # Question: Which neighbourhood in Vancouver are you most likely to find a washroom at the park?
+    parks = pd.read_csv(input_file_2, sep = ';', index_col = 'ParkID')
+    parks = parks[['Washrooms', 'NeighbourhoodName']]
+   
+    # https://stackoverflow.com/questions/33742588/pandas-split-dataframe-by-column-value
+    has_wr, no_wr = [x for _, x in parks.groupby(parks['Washrooms'] == 'N')]
+    
+    wrc = has_wr.groupby(['NeighbourhoodName']).size().to_frame('count').reset_index()
+    wrc = wrc.sort_values(by=['NeighbourhoodName'], ascending=True)
+    
+    nwrc = no_wr.groupby(['NeighbourhoodName']).size().to_frame('count').reset_index()
+    nwrc = nwrc.sort_values(by=['NeighbourhoodName'], ascending=True)
+    
+    wrc = wrc.rename(columns = {'NeighbourhoodName': 'Neighbourhood', 'count': 'Y_count'})
+    wrc['total'] = nwrc['count'] + wrc['Y_count']
+    wrc['Percent'] = wrc['Y_count'] / wrc['total']
+    wrc = wrc.sort_values(by=['Percent'], ascending=False)
+    
+    plt.bar(np.arange(len(wrc)), wrc['Percent'], alpha=0.8, color='bg')
+    plt.xticks(np.arange(len(wrc)), wrc['Neighbourhood'], rotation = 90)
+    plt.ylabel('Percentage Washrooms to No washroom')
+    plt.title('Washroom ratio per Neighbourhood in Vancouver')
+    plt.tight_layout()
+    plt.savefig('parks_analysis/washroom_ratio.png')
+    #plt.clf()
+    
+    
+
+    # ----- Other -----
+    # Question:  TBD (something about gas stations)
     # Filter gas stations
     fuel = reduced[reduced.apply(lambda x: 'brand' in x['tags'], axis = 1)]
-    
-    #fuel = fuel[fuel['amenity'] == 'fuel']
-    #fuel[fuel['name'] == ""] = fuel['tags']
-    #fuel.to_csv(output_file)
+    fuel = fuel[fuel['amenity'] == 'fuel']
     
     # Question: TBD (something about chain restaurants)
     # Filter chain restaurants
