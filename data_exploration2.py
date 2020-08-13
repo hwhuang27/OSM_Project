@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set()
-
 from sklearn.pipeline import make_pipeline
 from sklearn.cluster import KMeans
+
+sns.set()
+plt.rcParams['font.size'] = 14.0
 
 def get_clusters(X):
     # get_clusters() from Exercise 8 
@@ -29,7 +30,7 @@ def main():
     data = pd.read_json(input_file, lines = True)
     #data = data[['lat', 'lon', 'name', 'amenity', 'tags']]
 
-    # ----- Reduce and plot data set (amenities)  -----
+    # ----- Reduce and visualize amenities  -----
     
     # We followed a couple rough guidelines for keeping amenities ...
     # 1) Should be of use for both locals and tourists alike
@@ -60,24 +61,24 @@ def main():
     pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
     ac = pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
     ac.figure.savefig('amenity_counts/amenity_counts.png')
+    plt.clf()
     
     # reduced amenity graph
     pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
     acr = pd.value_counts(reduced['amenity']).plot.barh(figsize=(6,18), title='Amenity Counts (Reduced)', alpha=0.6, color=['green','teal'])
     acr.figure.savefig('amenity_counts/amenity_reduced.png')
+    plt.clf()
 
-    
     # ----- Wikidata section -----
     # Filter entries with a wikidata tag
     wiki = reduced[reduced.apply(lambda x: 'wikidata' and 'brand:wikidata' in x['tags'], axis = 1)]
 
-    # ----- Food section -----
+    # ----- Questions -----
     # Filter only food amenities: 
-    food = data[data['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro") & ~data['amenity'].str.contains("disused")]
+    food = reduced[reduced['amenity'].str.contains("restaurant|food|cafe|pub|bar|ice_cream|food_court|bbq|bistro")]
     food = food.dropna()
     
-    # Question: What are the top restaurant types in this city? 
-    # Follow-up: ...
+    # Question 1) What are the top restaurant types in this city?
     # This is to be a rough estimate of some of the most popular types of restaurants in Vancouver.
     # It is a rough estimate because some tags overlap (e.g japanese and sushi)
     # --> Maybe we can take out culture tags (chinese, japanese, thai, etc.)
@@ -135,9 +136,27 @@ def main():
     plt.savefig('top_restaurants_analysis/top_restaurant_types_no_cultural_tags.png')
     plt.clf()
     
-    #cuisine.to_csv(output_file)
+    # Follow-up: coffee_shop analysis
+    def filter_coffee(tags):
+        return 'coffee_shop' in tags.values()
     
-    # Question: How do the densities of pizza restaurants look like in each city?
+    coffee = food[food['tags'].apply(filter_coffee)]
+    
+    #Reference: https://stackoverflow.com/questions/47418299/python-combining-low-frequency-factors-category-counts
+    series = pd.value_counts(coffee['name'])
+    mask = (series/series.sum() * 100).lt(2)
+    coffee = coffee.copy()
+    coffee['name'] = np.where(coffee['name'].isin(series[mask].index),'Other', coffee['name'])
+    coffee_counts = series[~mask]
+    coffee_counts['Other'] = series[mask].sum()
+    
+    explode = (0.01, 0.01, 0.01)
+    plt.title('Percentage of Coffee Shops in and around Vancouver')
+    plt.pie(coffee_counts, labels=coffee_counts.index, autopct='%1.1f%%', startangle=180)
+    plt.savefig('top_restaurants_analysis/coffee_shop_follow_up.png')
+    plt.clf()
+    
+    # Question 2) How do the densities of pizza restaurants look like in each city?
     # Filter pizza restaurants
     def filter_pizza(tags):
         return 'pizza' in tags.values()
@@ -152,7 +171,7 @@ def main():
     cities_lat = np.array([49.2827, 49.2488, 49.1666, 49.2838, 49.1042, 49.1913, 49.0504])
     cities_lon = np.array([-123.1207, -122.9805, -123.1336, -122.7932, -122.6604, -122.8490, -122.3045])
     
-    # let's make those clusters
+    # let's make some clusters
     pizza_clusters = get_clusters(pizza)
     
     # set custom labels for center-of-city points
@@ -169,12 +188,21 @@ def main():
             arrowprops=dict(arrowstyle = 'simple', connectionstyle='arc3,rad=0')) 
     
     plt.savefig('pizza_clusters_analysis/pizza_clusters.png')   
+    plt.clf()
+    
+    # Question 3) Something something gas stations
+    # Filter gas stations
+    fuel = reduced[reduced.apply(lambda x: 'brand' in x['tags'], axis = 1)]
+    
+    #fuel = fuel[fuel['amenity'] == 'fuel']
+    #fuel[fuel['name'] == ""] = fuel['tags']
+    
+    #fuel.to_csv(output_file)
     
     # Question: TBD (something about chain restaurants)
     # Filter chain restaurants
     brand = food[food.apply(lambda x: 'brand' in x['tags'], axis = 1)]
     #pd.value_counts(brand['name']).plot.barh(figsize=(10,25), title='Counts for Chain Restaurants')
-    
 
 if __name__ == '__main__':
     main()
