@@ -1,6 +1,6 @@
 # CMPT353_OSM_Project
 
-
+[TOC]
 
 ## Prerequisites
 
@@ -56,6 +56,13 @@ The main input data files is `./osm/amenities-vancouver.json.gz` in the project 
 
 
 
+**Requirements**:
+
+- `./osm/amenities-vancouver.json.gz` 
+- `./osm/parks.csv` 
+
+
+
 **How to run:** 
 
 ```bash
@@ -67,8 +74,6 @@ OR
 ```bash
 python3 various_questions.py osm\amenities-vancouver.json.gz osm\parks.csv output.csv
 ```
-
-Requires `amenities-vancouver.json.gz` and `parks.csv` file in the `osm` folder.
 
 
 
@@ -90,13 +95,17 @@ Requires `amenities-vancouver.json.gz` and `parks.csv` file in the `osm` folder.
 
 
 
+**Requirements**:
+
+- `./osm/amenities-vancouver.json.gz` 
+
+
+
 **How to run**:
 
 ```bash
 python3 get_opening_hours.py ./osm/amenities-vancouver.json.gz
 ```
-
-Requires the `amenities-vancouver.json.gz` in the `osm` folder
 
 
 
@@ -105,6 +114,30 @@ Requires the `amenities-vancouver.json.gz` in the `osm` folder
 1. `opening_hours.json` 
 
 
+
+### Codes and results for opening hours analysis
+
+**File**: `opening_hours.ipynb` 
+
+
+
+**Requirements**:
+
+- `./opening_hours.json` 
+  - Can be obtained from `get_opening_hours.py`, see above steps for more details
+
+
+
+### Codes and results for fast food restaurants analysis
+
+**File**: `fast_food.ipynb` 
+
+
+
+**Requirements**:
+
+- `./opening_hours.json` 
+  - Can be obtained from `get_opening_hours.py`, see above steps for more details
 
 
 
