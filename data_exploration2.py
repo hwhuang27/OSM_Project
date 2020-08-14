@@ -48,7 +48,7 @@ def main():
                   "nursery|water_point|car_rep|disused:restaurant|public_building|ATLAS_clean_room")
     
     reduced = reduced[~reduced['amenity'].str.contains(throwaways)]
-    reduced.to_csv(output_file)
+    #reduced.to_csv(output_file)
     
     # original amenity graph
     pd.value_counts(data['amenity']).plot.barh(figsize=(8,20), title='Amenity Counts', alpha=0.6, color=['blue', 'cyan'])
@@ -229,10 +229,8 @@ def main():
     plt.title('Washroom ratio per Neighbourhood in Vancouver')
     plt.tight_layout()
     plt.savefig('parks_analysis/washroom_ratio.png')
-    #plt.clf()
+    plt.clf()
     
-    
-
     # ----- Other -----
     # Question:  TBD (something about gas stations)
     # Filter gas stations
